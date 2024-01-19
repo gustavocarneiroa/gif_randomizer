@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Sua Página</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .background-container {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Outros estilos para o conteúdo, se necessário */
+    </style>
+</head>
+
+<body>
+    <div class="background-container" id="background-container"></div>
+
+    
+    <script>
+        // Obtendo a URL atual
+        var urlAtual = window.location.href;
+
+        // Criando um objeto URL
+        var urlObj = new URL(urlAtual);
+
+        // Obtendo todos os valores associados ao parâmetro "gif"
+        var gifsArray = urlObj.searchParams.getAll("gif");
+        console.log(gifsArray)
+        // Índice para rastrear a posição atual no array
+        var indiceAtual = 0;
+
+        function atualizarBackground() {
+            console.log("Atualizando background...")
+            // Obtendo o gif atual
+            var gifAtual = gifsArray[indiceAtual] ?? "https://i.pinimg.com/originals/18/8e/a6/188ea617a0741ffa797d29377c0f56ef.gif";
+
+            // Atualizando o background-image
+            document.getElementById('background-container').style.backgroundImage = "url('" + gifAtual + "')";
+
+            // Incrementando o índice ou resetando se atingir o final do array
+            indiceAtual = (indiceAtual + 1) % gifsArray.length;
+        }
+
+        // Chamando a função inicialmente
+        atualizarBackground();
+
+        // Definindo um intervalo para atualizar o background a cada 10 segundos
+        setInterval(atualizarBackground, 10000);
+    </script>
+</body>
+
+</html>
