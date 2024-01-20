@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Auto gif</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .background-container {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-container" id="background-container"></div>    
+    <script>
+        const url = window.location.href;
+        const urlObj = new URL(url);
+        const gifsArray = urlObj.searchParams.getAll("gif");
+        const interval =  (urlObj.searchParams.get("interval") ?? 10) * 1000;
+        let index = 0;
+
+        function atualizarBackground() {
+            let gifAtual = gifsArray[index] ?? "./gangnam.gif";
+            const container = document.getElementById('background-container');
+            container.style.backgroundImage = `url("${gifAtual}")`;
+            
+            index = (index + 1) % gifsArray.length;
+        }
+        atualizarBackground();
+        setInterval(atualizarBackground, interval);
+    </script>
+</body>
+
+</html>

@@ -4,66 +4,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <title>Sua Página</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
-
-        .background-container {
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        /* Outros estilos para o conteúdo, se necessário */
-    </style>
+    <title>Gerenciador de URLs</title>
+    <!-- Inclua o Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
 </head>
 
 <body>
-    <div class="background-container" id="background-container"></div>
 
-    
+    <div id="app">
+        <h1>Gerenciador de pacotes de GIF</h1>
+        <div>
+            <label for="package">Nome do pacote de GIFs:</label>
+            <input type="text" v-model="packageName" id="package">
+            <label for="urlInput">Adicionar URL:</label>
+            <input type="text" v-model="temporaryUrl" id="urlInput">
+            <button @click="addTemporaryUrl">Adicionar</button>
+        </div>
+
+        <div v-for="(url, index) in urls" :key="index" class="url-item">
+            {{ index + 1 }} :
+            <img class="sample-gif" :src="url" />
+            <button @click="removerURL(index)">Remover</button>
+        </div>
+        <button @click="savePackage">Salvar pacote</button>
+
+        <hr>
+        <div v-for="(package, index) in packages" :key="index">
+            {{ package.name }} 
+            <button @click="toClipboard(package.link)">Copiar link</button>
+            <div class="url-item">
+                <div v-for="(url, index) in package.urls" :key="index">
+                    <img class="sample-gif" :src="url" />
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Obtendo a URL atual
-        var urlAtual = window.location.href;
+        new Vue({
+            el: '#app',
+            data: {
+                packageName: "",
+                temporaryUrl: "",
+                interval: 10,
+                urls: [],
+                packages: [],
+            },
+            created() {
+                const packages = localStorage.getItem("packages");
+                this.packages.push(...JSON.parse(packages))
+            },
+            methods: {
+                addTemporaryUrl() {
+                    if (this.temporaryUrl) {
+                        this.urls.push(this.temporaryUrl);
+                        this.temporaryUrl = '';
+                    }
+                },
+                removerURL(index) {
+                    this.urls.splice(index, 1);
+                },
+                createGifLink(gifs, interval = 10) {
+                    return `${window.location.origin}/gifs.html?interval=${interval}&${gifs.map(u => `gif=${u}`).join('&')}`
+                },
+                savePackage() {
+                    const package = this.createPackage();
+                    const packages = localStorage.getItem("packages") ?? [];
+                    packages.push(package);
 
-        // Criando um objeto URL
-        var urlObj = new URL(urlAtual);
+                    localStorage.setItem("packages", JSON.stringify(packages));
+                    this.packages.push(package);
+                    this.resetEverything();
+                },
+                createPackage() {
+                    return {
+                        name: this.packageName,
+                        urls: this.urls,
+                        link: this.createGifLink(this.urls, this.interval)
+                    }
+                },
+                resetEverything() {
+                    this.packageName = ""
+                    this.temporaryUrl = ""
+                    this.interval = 10
+                    this.urls = []
+                },
+                toClipboard(link) {
+                    const inputElement = document.createElement('input');
+                    inputElement.value = link;
+                    document.body.appendChild(inputElement);
+                    inputElement.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(inputElement);
+                    alert('Link copiado para o clipboard: ' + link);
+                }
 
-        // Obtendo todos os valores associados ao parâmetro "gif"
-        var gifsArray = urlObj.searchParams.getAll("gif");
-        console.log(gifsArray)
-        // Índice para rastrear a posição atual no array
-        var indiceAtual = 0;
+            }
+        });
+    </script>
 
-        function atualizarBackground() {
-            console.log("Atualizando background...")
-            // Obtendo o gif atual
-            var gifAtual = gifsArray[indiceAtual] ?? "https://i.pinimg.com/originals/18/8e/a6/188ea617a0741ffa797d29377c0f56ef.gif";
-
-            // Atualizando o background-image
-            document.getElementById('background-container').style.backgroundImage = "url('" + gifAtual + "')";
-
-            // Incrementando o índice ou resetando se atingir o final do array
-            indiceAtual = (indiceAtual + 1) % gifsArray.length;
+    <style>
+        .url-item {
+            display: flex;
+            align-items: center;
+            justify-content: baseline;
+            padding: 8px;
+            margin: 8px;
         }
 
-        // Chamando a função inicialmente
-        atualizarBackground();
+        .sample-gif {
+            border-radius: 10px;
+            width: 100px;
+            height: auto;
+            border: none;
+        }
+    </style>
 
-        // Definindo um intervalo para atualizar o background a cada 10 segundos
-        setInterval(atualizarBackground, 10000);
-    </script>
 </body>
 
 </html>
